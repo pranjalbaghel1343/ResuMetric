@@ -1,0 +1,88 @@
+﻿--- PAGE 1 ---
+Task Document ΓÇô Resume Screening &
+Candidate Ranking Web Application
+Objective
+Develop a full-stack web application that automates resume screening by comparing uploaded
+resumes against a Job Description (JD), assigning a matching score, and ranking candidates
+from highest to lowest fit.
+The goal is to simplify the initial HR screening process and help identify the most relevant
+candidates quickly.
+Scope
+Build a web application with the following workflow:
+Upload Resumes ΓåÆ Upload/Enter Job Description ΓåÆ Analyze ΓåÆ Generate Scores ΓåÆ
+Display Ranked Candidates
+Features
+1. Resume Upload
+ΓùÅ Upload single or multiple resumes
+ΓùÅ Supported formats:
+Γùï PDF
+Γùï DOC
+Γùï DOCX
+ΓùÅ Store uploaded resumes
+2. Job Description Input
+ΓùÅ Enter Job Description manually or
+--- PAGE 2 ---
+ΓùÅ Upload JD document
+3. Resume Screening & Scoring
+The system should:
+ΓùÅ Extract relevant information from resumes
+ΓùÅ Compare resumes against the Job Description
+ΓùÅ Generate a matching score (0ΓÇô100)
+ΓùÅ Rank candidates from highest score to lowest score
+Suggested comparison factors:
+ΓùÅ Skills match
+ΓùÅ Experience relevance
+ΓùÅ Education alignment
+ΓùÅ Keyword similarity
+4. Results Dashboard
+Display:
+ΓùÅ Candidate Name
+ΓùÅ Resume Preview
+ΓùÅ Match Score
+ΓùÅ Rank
+ΓùÅ Key Matching Skills
+ΓùÅ Missing Skills (if any)
+Additional features:
+ΓùÅ Sort by score
+ΓùÅ Search candidates
+ΓùÅ Export results (CSV/Excel)
+Technical Requirements
+Frontend
+--- PAGE 3 ---
+ΓùÅ React / Next.js (preferred)
+ΓùÅ Responsive UI
+Backend
+ΓùÅ Node.js / Express or FastAPI
+Database
+ΓùÅ PostgreSQL / MySQL
+AI / Processing
+ΓùÅ Use any suitable approach for:
+Γùï Resume parsing
+Γùï JD analysis
+Γùï Candidate scoring
+Deployment
+Deploy the application on any cloud/platform.
+Examples:
+ΓùÅ Vercel
+ΓùÅ Netlify
+ΓùÅ Render
+ΓùÅ AWS
+ΓùÅ GCP
+Deliverables
+Submit:
+1. GitHub Repository Link
+Γùï Complete source code
+Γùï README with setup instructions
+2. Deployed Application URL
+Γùï Publicly accessible
+3. Brief Documentation
+Γùï Architecture overview
+Γùï Approach used for scoring candidates
+--- PAGE 4 ---
+Γùï Assumptions (if any)
+Expected Outcome
+A working web application where users can upload resumes and a Job Description, and receive
+a ranked list of candidates based on suitability for the role.
+Timeline
+ΓùÅ The complete application should be developed and submitted within 2ΓÇô3 days from task
+assignment.

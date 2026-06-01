@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.env
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Uploads folder (resume files)
+backend/uploads/
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.env
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
