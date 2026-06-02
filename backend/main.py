@@ -128,6 +128,7 @@ async def save_job_description(
 def analyze(
     jd_id: int = Form(...),
     candidate_ids: str = Form(...),   # JSON array string e.g. "[1,2,3]"
+    engine: str = Form("gemini"),
     db: Session = Depends(get_db)
 ):
     jd = db.query(JobDescription).filter(JobDescription.id == jd_id).first()
@@ -145,7 +146,9 @@ def analyze(
     for c in candidates:
         if not c.raw_text:
             continue
-        result = score_resume(c.raw_text, jd.content, candidate_name=c.name)
+        result = score_resume(c.raw_text, jd.content, candidate_name=c.name, engine=engine)
+        if "error" in result:
+            raise HTTPException(status_code=500, detail=result["error"])
         scored.append({"candidate": c, "result": result})
 
     # Rank them

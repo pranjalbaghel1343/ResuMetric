@@ -26,6 +26,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState('');
   const [results, setResults] = useState(null);
+  const [analyzeError, setAnalyzeError] = useState(null);
   const [toast, setToast] = useState(null);
 
   const showToast = (message, type = 'info') => setToast({ message, type });
@@ -61,17 +62,22 @@ export default function App() {
   };
 
   // ── Step 3: Analyze ───────────────────────────────────────────────────────
-  const handleAnalyze = async () => {
+  const handleAnalyze = async (engine = 'gemini') => {
     setLoading(true);
-    setLoadingMsg('🤖 Gemini AI is analyzing resumes… this may take 15–30 seconds');
+    setAnalyzeError(null);
+    setLoadingMsg(engine === 'gemini' 
+      ? '🤖 Gemini AI is analyzing resumes… this may take 15–30 seconds'
+      : '🧮 Offline engine is scoring resumes…');
     try {
       const ids = uploadedCandidates.map(c => c.id);
-      const res = await analyzeResumes(jdId, ids);
+      const res = await analyzeResumes(jdId, ids, engine);
       setResults(res.data);
       setStep(3);
       showToast('🎉 Analysis complete! Candidates ranked.', 'success');
     } catch (e) {
-      showToast('Analysis failed. Check backend logs.', 'error');
+      const errorMsg = e.response?.data?.detail || 'Analysis failed. Check backend logs.';
+      setAnalyzeError(errorMsg);
+      showToast('Analysis failed.', 'error');
     } finally { setLoading(false); }
   };
 
@@ -174,10 +180,26 @@ export default function App() {
             <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '2rem' }}>
               Gemini AI will evaluate skills, experience, education & keyword alignment
             </p>
+            
+            {analyzeError && (
+              <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--red)', padding: '1rem', borderRadius: '12px', marginBottom: '2rem', textAlign: 'left' }}>
+                <h4 style={{ color: 'var(--red)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  ⚠️ Analysis Error
+                </h4>
+                <p style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>{analyzeError}</p>
+                <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => handleAnalyze('offline')}>
+                  🧮 Fallback to Offline Analysis
+                </button>
+              </div>
+            )}
+
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button className="btn btn-outline" onClick={() => setStep(1)}>← Back</button>
-              <button className="btn btn-primary" style={{ fontSize: '1rem', padding: '0.9rem 2.5rem' }} onClick={handleAnalyze}>
-                ⚡ Analyze with AI
+              <button className="btn btn-outline" onClick={() => handleAnalyze('offline')}>
+                🧮 Offline Analysis
+              </button>
+              <button className="btn btn-primary" style={{ fontSize: '1rem', padding: '0.9rem 2.5rem' }} onClick={() => handleAnalyze('gemini')}>
+                ✨ Analyze with Gemini
               </button>
             </div>
           </div>

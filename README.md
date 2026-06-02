@@ -5,7 +5,7 @@
 ![Tech Stack](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-61DAFB?style=flat-square&logo=react)
 ![Backend](https://img.shields.io/badge/Backend-FastAPI-009688?style=flat-square&logo=fastapi)
 ![DB](https://img.shields.io/badge/Database-PostgreSQL-336791?style=flat-square&logo=postgresql)
-![AI](https://img.shields.io/badge/AI-Gemini%202.0%20Flash-4285F4?style=flat-square&logo=google)
+![AI](https://img.shields.io/badge/AI-Gemini%202.5%20Flash-4285F4?style=flat-square&logo=google)
 
 ---
 
@@ -18,7 +18,8 @@
 - **Ranked dashboard** — animated score rings, matched/missing skills, AI strengths & gaps
 - **Search & sort** candidates by name, skill, or score
 - **CSV export** of full results
-- **Automatic TF-IDF fallback** if no API key is configured
+- **Dual-Engine Selection** — explicitly choose between Gemini AI and the built-in Offline TF-IDF engine.
+- **Resilient AI Integration** — automatic 503 error retries and strict fallback validation.
 
 ---
 
@@ -46,7 +47,7 @@
 
 ## Scoring Algorithm
 
-When Gemini API key is available, **Gemini 2.0 Flash** evaluates:
+When using the Gemini engine, **Gemini 2.5 Flash** evaluates:
 - Semantic skill understanding
 - Experience relevance (not just keyword matching)
 - Education-to-role alignment
@@ -88,6 +89,7 @@ Get a free Gemini API key at: https://aistudio.google.com/app/apikey
 
 ### 2. Create PostgreSQL Database
 
+**Method A: Terminal (Recommended)**
 ```bash
 psql -U postgres -c "CREATE DATABASE resumetric;"
 ```
@@ -117,8 +119,8 @@ App available at: http://localhost:5173
 
 1. **Upload Resumes** — drag and drop one or multiple PDF/DOCX files
 2. **Enter Job Description** — paste the full JD text with role title
-3. **Click "Analyze with AI"** — Gemini scores each resume (15–30 sec)
-4. **View Rankings** — sorted cards with scores, skill badges, AI insights
+3. **Choose Scoring Engine** — click **✨ Analyze with Gemini** (or **🧮 Offline Analysis** for fallback)
+4. **View Rankings** — sorted cards with scores, skill badges, AI strengths/gaps
 5. **Export CSV** — download complete results spreadsheet
 
 ---

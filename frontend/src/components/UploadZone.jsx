@@ -1,9 +1,14 @@
-import React, { useCallback, useState } from 'react';
-import { Upload, FileText, X, CheckCircle } from 'lucide-react';
+import React, { useCallback, useState, useEffect } from 'react';
+import { FileText, X, CheckCircle } from 'lucide-react';
 
 export default function UploadZone({ onFilesChange, uploadedCandidates }) {
   const [files, setFiles] = useState([]);
   const [dragover, setDragover] = useState(false);
+
+  // Notify parent after state update, not during render
+  useEffect(() => {
+    onFilesChange(files);
+  }, [files]);
 
   const addFiles = useCallback((newFiles) => {
     const valid = Array.from(newFiles).filter(f =>
@@ -12,13 +17,12 @@ export default function UploadZone({ onFilesChange, uploadedCandidates }) {
     setFiles(prev => {
       const merged = [...prev];
       valid.forEach(f => { if (!merged.find(m => m.name === f.name)) merged.push(f); });
-      onFilesChange(merged);
       return merged;
     });
-  }, [onFilesChange]);
+  }, []);
 
   const removeFile = (name) => {
-    setFiles(prev => { const next = prev.filter(f => f.name !== name); onFilesChange(next); return next; });
+    setFiles(prev => prev.filter(f => f.name !== name));
   };
 
   return (

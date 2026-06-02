@@ -1,6 +1,7 @@
 import re
 import json
 import os
+import time
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -95,25 +96,31 @@ RESUME (Candidate: {candidate_name}):
 Return ONLY a valid JSON object (no markdown) with exactly this structure:
 {{"overall_fit":<int 0-100>,"skills_match":<int 0-100>,"experience_relevance":<int 0-100>,"education_fit":<int 0-100>,"keyword_alignment":<int 0-100>,"matched_skills":[<strings>],"missing_skills":[<strings>],"strengths":"<one sentence>","gaps":"<one sentence>"}}"""
 
-    try:
-        response = _genai_client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=prompt
-        )
-        raw = response.text.strip()
-        raw = re.sub(r'^```(?:json)?\s*', '', raw)
-        raw = re.sub(r'\s*```$', '', raw)
-        data = json.loads(raw)
-        return {"success": True, "data": data}
-    except Exception as e:
-        print(f"[WARN] Gemini scoring error: {e}")
-        return {"success": False}
+    for attempt in range(3):
+        try:
+            response = _genai_client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt
+            )
+            raw = response.text.strip()
+            raw = re.sub(r'^```(?:json)?\s*', '', raw)
+            raw = re.sub(r'\s*```$', '', raw)
+            data = json.loads(raw)
+            return {"success": True, "data": data}
+        except Exception as e:
+            error_str = str(e)
+            print(f"[WARN] Gemini scoring error (Attempt {attempt+1}/3): {error_str}")
+            if "503" in error_str and attempt < 2:
+                time.sleep(2)  # Wait 2 seconds before retrying on 503
+                continue
+            return {"success": False, "error": error_str}
 
 
-def score_resume(resume_text: str, jd_text: str, candidate_name: str = "Candidate") -> dict:
+def score_resume(resume_text: str, jd_text: str, candidate_name: str = "Candidate", engine: str = "gemini") -> dict:
     """
     Score a resume against a JD.
-    Uses Gemini AI if available, falls back to TF-IDF + rules.
+    If engine == 'gemini', it requires Gemini and will return an error dict if it fails.
+    If engine == 'offline', it uses TF-IDF + rules directly.
     """
     # ── Extract local skills regardless (for fallback / enrichment) ────────────
     jd_skills = extract_skills(jd_text)
@@ -122,34 +129,40 @@ def score_resume(resume_text: str, jd_text: str, candidate_name: str = "Candidat
     missing = [s for s in jd_skills if s not in resume_skills]
 
     # ── GEMINI PATH ────────────────────────────────────────────────────────────
-    if GEMINI_AVAILABLE:
+    if engine == "gemini":
+        if not GEMINI_AVAILABLE:
+            return {"error": "Gemini API key is missing or invalid. Please check your .env file or use Offline Analysis."}
+        
         result = gemini_score(resume_text, jd_text, candidate_name)
-        if result["success"]:
-            d = result["data"]
-            # Weighted final score from Gemini's sub-scores
-            total = round(
-                d.get("skills_match", 50) * 0.40 +
-                d.get("keyword_alignment", 50) * 0.30 +
-                d.get("experience_relevance", 50) * 0.20 +
-                d.get("education_fit", 50) * 0.10,
-                1
-            )
-            # Use Gemini's skills if available, else use local extraction
-            g_matched = d.get("matched_skills", matched)
-            g_missing = d.get("missing_skills", missing[:10])
-            return {
-                "total_score": min(max(total, 0), 100),
-                "skills_score": d.get("skills_match", 0),
-                "keyword_score": d.get("keyword_alignment", 0),
-                "experience_score": d.get("experience_relevance", 0),
-                "education_score": d.get("education_fit", 0),
-                "matched_skills": g_matched,
-                "missing_skills": g_missing[:10],
-                "resume_skills": resume_skills,
-                "strengths": d.get("strengths", ""),
-                "gaps": d.get("gaps", ""),
-                "scored_by": "gemini",
-            }
+        if not result["success"]:
+            error_msg = result.get("error", "Unknown error")
+            return {"error": f"Gemini AI failed: {error_msg}. Please check your API key/quota or use Offline Analysis."}
+        
+        d = result["data"]
+        # Weighted final score from Gemini's sub-scores
+        total = round(
+            d.get("skills_match", 50) * 0.40 +
+            d.get("keyword_alignment", 50) * 0.30 +
+            d.get("experience_relevance", 50) * 0.20 +
+            d.get("education_fit", 50) * 0.10,
+            1
+        )
+        # Use Gemini's skills if available, else use local extraction
+        g_matched = d.get("matched_skills", matched)
+        g_missing = d.get("missing_skills", missing[:10])
+        return {
+            "total_score": min(max(total, 0), 100),
+            "skills_score": d.get("skills_match", 0),
+            "keyword_score": d.get("keyword_alignment", 0),
+            "experience_score": d.get("experience_relevance", 0),
+            "education_score": d.get("education_fit", 0),
+            "matched_skills": g_matched,
+            "missing_skills": g_missing[:10],
+            "resume_skills": resume_skills,
+            "strengths": d.get("strengths", ""),
+            "gaps": d.get("gaps", ""),
+            "scored_by": "gemini",
+        }
 
     # ── FALLBACK: TF-IDF + Rules ───────────────────────────────────────────────
     skills_score = (len(matched) / len(jd_skills) * 100) if jd_skills else 50.0

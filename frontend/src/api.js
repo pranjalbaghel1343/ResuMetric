@@ -15,10 +15,11 @@ export const saveJobDescription = (title, content) => {
   return API.post('/api/job-description', form);
 };
 
-export const analyzeResumes = (jdId, candidateIds) => {
+export const analyzeResumes = (jdId, candidateIds, engine = 'gemini') => {
   const form = new FormData();
   form.append('jd_id', jdId);
   form.append('candidate_ids', JSON.stringify(candidateIds));
+  form.append('engine', engine);
   return API.post('/api/analyze', form);
 };
 
