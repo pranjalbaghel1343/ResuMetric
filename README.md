@@ -89,7 +89,6 @@ Get a free Gemini API key at: https://aistudio.google.com/app/apikey
 
 ### 2. Create PostgreSQL Database
 
-**Method A: Terminal (Recommended)**
 ```bash
 psql -U postgres -c "CREATE DATABASE resumetric;"
 ```
